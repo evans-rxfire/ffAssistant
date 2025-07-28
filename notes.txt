@@ -1,0 +1,26 @@
+FF Assistant 
+
+The intial plan was to make separate apps for drafting and start/sit advice. I decided to make one app with several pages, similar to the Rx Burn Project. I'll try to divide the notes according to the planned pages: league info, draft helper, start/sit advice, waiver wire helper.
+
+-- League info (index.html)
+This is the main page and where the user will input their user info and league info from Sleeper. 
+Use this to fetch user info
+    https://api.sleeper.app/v1/user/<username>
+    https://api.sleeper.app/v1/user/<user_id>
+
+Sleeper advises to use user_id because username may change. Most of us don't know our user_id, so I will stick with the user only inputing their username and save the user_id to local storage for future use. Will display both on League Info page (index.html)
+To find user_id:
+
+To get league info
+    https://api.sleeper.app/v1/league/<league_id> == for a specific league
+        To find league_id:
+        web => league_id is located at end of the URL 18-digit numerical string
+        mobile => toward bottom of "General League Settings", "Copy League ID"
+
+    https://api.sleeper.app/v1/user/<user_id>/leagues/<sport>/<season> == for all leagues for user
+
+My initial plan was to have the user either input their user info AND the league info, but now I think there is a better way. 
+Now, the user inputs their user info and then their leagues will self-populate on the page.
+Then, "Select league" <select> input with <option> self-populate with league names.
+User selects a league and that leagues info will then be displayed on the page.
+That league info will then be used on the other pages for drafts, start/sit, waivers.

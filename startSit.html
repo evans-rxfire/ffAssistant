@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="dist/styles.css">
-    <title>FF Start/Sit Assistant</title>
+    <title>Fantasy Football Assistant</title>
 </head>
-<body class="bg-green-700 text-slate-100 p-4">
+<body class="bg-slate-400 p-4">
 
         <nav class="flex justify-between items-center px-4 py-2 bg-green-800 rounded">
         <ul class="flex space-x-4 list-none m-0 p-0">
-            <li><a href="index.html" class="hover:underline hover:decoration-2 hover:decoration-sky-400">League</a></li>
-            <li><a href="draft.html" class="hover:underline hover:decoration-2 hover:decoration-sky-400">Draft</a></li>
-            <li><a href="startSit.html" class="hover:underline hover:decoration-2 hover:decoration-sky-400">Start/Sit</a></li>
-            <li><a href="waivers.html" class="hover:underline hover:decoration-2 hover:decoration-sky-400">Waivers</a></li>
+            <li><a href="index.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">League</a></li>
+            <li><a href="draft.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Draft</a></li>
+            <li><a href="startSit.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Start/Sit</a></li>
+            <li><a href="waivers.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Waivers</a></li>
         </ul>
 
-        <div class="relative lg:ml-6">
+        <div class="text-slate-200 relative lg:ml-6">
             <button id="dropdown-toggle" class="px-4 py-2 hover:underline hover:decoration-2 hover:decoration-sky-400">Other Apps</button>
 
             <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 bg-green-800 border border-slate-200 rounded shadow-md z-10 hidden">
@@ -25,7 +25,39 @@
         </div>
     </nav>
     
+    <main class="max-w-6xl mx-auto bg-green-800 text-slate-200 p-2 mt-4">
+        <div id="user-league-input" class="flex flex-row justify-center p-4 border border-slate-300">
+            <h3 class="p-2">Import User Info from Sleeper</h3>
+            <button id="user-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm ">Get User Info</button>
+
+            <h3 class="p-2">Import League Info from Sleeper</h3>
+            <button id="league-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm">Get League Info</button>
+        </div>
+
+        <div id="user-league-output" class=" border border-slate-300 p-4 mt-2">
+            <div id="user-container" class="flex flex-row mb-4">
+                <p>User Name: <span id="user-name"></span></p>
+                <p class="ml-6">User ID: <span id="user-id"></span></p>
+            </div>
+
+            <div id="league-container" class="flex flex-row">
+                <p>League Name: <span id="league-name"></span></p>
+                <p class="ml-6">League ID: <span id="league-id"></span></p>
+
+                <div id="league-details">
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center mt-8 text-sm">
+        <p>&copy; 2025 evans-rxfire. Licensed under the
+            <a href="LICENSE" target="_blank" rel="noopener noreferrer" class="text-sky-600 hover:underline hover:decoration-2">MIT License</a>.
+        </p>
+    </footer>
+
     <script src="js/ui.js"></script>
-    <script src="js/main.js" defer></script>
+    <script src="js/startSit.js" defer></script>
 </body>
 </html>

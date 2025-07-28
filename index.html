@@ -6,17 +6,17 @@
     <link rel="stylesheet" href="dist/styles.css">
     <title>Fantasy Football Assistant</title>
 </head>
-<body class="bg-green-700 text-slate-100 p-4">
+<body class="bg-slate-400 p-4">
 
         <nav class="flex justify-between items-center px-4 py-2 bg-green-800 rounded">
         <ul class="flex space-x-4 list-none m-0 p-0">
-            <li><a href="index.html" class="hover:underline hover:decoration-2 hover:decoration-sky-400">League</a></li>
-            <li><a href="draft.html" class="hover:underline hover:decoration-2 hover:decoration-sky-400">Draft</a></li>
-            <li><a href="startSit.html" class="hover:underline hover:decoration-2 hover:decoration-sky-400">Start/Sit</a></li>
-            <li><a href="waivers.html" class="hover:underline hover:decoration-2 hover:decoration-sky-400">Waivers</a></li>
+            <li><a href="index.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">League</a></li>
+            <li><a href="draft.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Draft</a></li>
+            <li><a href="startSit.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Start/Sit</a></li>
+            <li><a href="waivers.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Waivers</a></li>
         </ul>
 
-        <div class="relative lg:ml-6">
+        <div class="text-slate-200 relative lg:ml-6">
             <button id="dropdown-toggle" class="px-4 py-2 hover:underline hover:decoration-2 hover:decoration-sky-400">Other Apps</button>
 
             <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 bg-green-800 border border-slate-200 rounded shadow-md z-10 hidden">
@@ -25,7 +25,53 @@
         </div>
     </nav>
     
+    <main class="max-w-6xl mx-auto bg-green-800 text-slate-200 p-2 mt-4">
+        <header class="text-center mb-6">
+            <h1 class="text-2xl font-bold">Fantasty Footabll Assistant</h1>
+            <h2 class="text-xl font-bold">Get Your User and League Information from <a href="https://sleeper.com" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:underline hover:decoration-2 hover:decoration-sky-400">Sleeper</a></h2>
+        </header>
+
+        <div id="user-container" class="flex items-center p-2 border border-slate-300">
+            <div id="user-input" class="flex flex-row items-center justify-start gap-4">
+                <h3 class="font-semibold p-2">Import User Info from Sleeper</h3>
+                <button type="button" id="get-user-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm">Get User Info</button>
+            </div>
+            <div id="user-output" class="px-4">
+                <p>User Name: <span id="user-name-span"></span></p>
+                <p>User ID: <span id="user-id-span"></span></p>
+            </div>
+            <div id="get-leagues" class="ml-auto flex items-center p-2">
+                <button type="button" id="get-leagues-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm">Get Leagues</button>
+            </div>
+        </div>
+
+        <div id="leagues-container" class=" border border-slate-300 p-4 mt-2">
+            <div id="league-list-container">
+                <h3 id="user-leagues-header" class="font-semibold p-2"></h3>
+                <ul id="league-list"></ul>
+            </div>
+            <div id="select-league-container" class="flex flex-row items-center justify-start">
+                <h3 class="font-semibold p-2">Select a league for use on the following pages:</h3>
+                <select id="selected-league" class="rounded-md border border-slate-200 shadow-sm p-2 bg-green-600 text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-700"></select>
+            </div>
+            <div id="league-info">
+
+            </div>
+        </div>
+
+        <div id="button-container" class="flex flex-col sm:flex-row sm:justify-between gap-4 p-2">
+            <button type="button" id="save-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-blue-600 text-slate-200 hover:bg-sky-700 text-sm">Save</button>
+            <button type="button" id="clear-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-amber-600 text-slate-200 hover:bg-sky-700 text-sm">Clear</button>
+        </div>
+    </main>
+
+    <footer class="text-center mt-8 text-sm">
+        <p>&copy; 2025 evans-rxfire. Licensed under the
+            <a href="LICENSE" target="_blank" rel="noopener noreferrer" class="text-sky-600 hover:underline hover:decoration-2">MIT License</a>.
+        </p>
+    </footer>
+
     <script src="js/ui.js"></script>
-    <script src="js/main.js" defer></script>
+    <script src="js/main.js" defer></script> <!--Add type="module" when importing functions from sleeperApi.js-->
 </body>
 </html>
