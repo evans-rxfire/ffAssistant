@@ -5,16 +5,28 @@ let leagues = [];
 let leagueData = {};
 
 const getUserBtn = document.getElementById("get-user-button");
-
+const getLeaguesBtn = document.getElementById("get-leagues-button");
 
 const userNameSpan = document.getElementById("user-name-span");
 const userIdSpan = document.getElementById("user-id-span");
+const leagueList = document.getElementById("league-list");
+const selectedLeague = document.getElementById("selected-league");
+const leagueInfo = document.getElementById("league-info");
 
 const saveBtn = document.getElementById("save-button");
 const clearBtn = document.getElementById("clear-button");
 
 
 // Functions
+function getNflSeasonYear() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    return month < 4 ? year - 1 : year;
+}
+
+// Sleeper API calls
 async function fetchUserData(userName) {
     if (typeof userName !== "string") {
         throw new Error("Invalid username input.");
@@ -28,10 +40,26 @@ async function fetchUserData(userName) {
     return res.json();
 }
 
+async function fetchAllLeagues(userId, season = getNflSeasonYear()) {
+    const url = `https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Leagues not found (${res.status})`);
+    return res.json();
+}
+
+// Data management functions
 function clearUser() {
+    userData = {};
+    
     userNameSpan.textContent = "";
     userIdSpan.textContent = "";
 }
+
+function clearLeagues() {
+    leagueList.innerHTML = "";
+    leagueInfo.innerHTML = "";
+}
+
 
 // Event Listeners
 getUserBtn.addEventListener("click", async () => {
@@ -42,15 +70,40 @@ getUserBtn.addEventListener("click", async () => {
     if (!userName?.trim()) return;
 
     try {
-        const user = await fetchUserData(userName);
-        console.log("Fetched Sleeper user:", user);
+        userData = await fetchUserData(userName);
+        console.log("Fetched Sleeper user:", userData);
 
-        userNameSpan.textContent = user.display_name;
-        userIdSpan.textContent = user.user_id;
+        userNameSpan.textContent = userData.display_name;
+        userIdSpan.textContent = userData.user_id;
     } catch (error) {
-        alert("Failed to fetch user data. Plese check the username and try again.");
+        alert("Failed to fetch user data. Please check the username and try again.");
     }
 });
+
+
+getLeaguesBtn.addEventListener("click", async () => {
+    clearLeagues();
+    
+    try {
+        leagues = await fetchAllLeagues(userData.user_id)
+        console.log(`${userData.display_name} leagues:`, leagues);
+        
+        leagues.forEach(league => {
+            const li = document.createElement("li");
+            li.textContent = league.name;
+            leagueList.appendChild(li);
+            
+            const option = document.createElement("option");
+            option.value = league.league_id;
+            option.textContent = league.name;
+            selectedLeague.appendChild(option);
+        });
+        
+    } catch (error) {
+        alert("Failed to fetch user leagues.");
+    }
+});
+
 
 
 clearBtn.addEventListener("click", () => {
