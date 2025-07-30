@@ -1,4 +1,5 @@
 // import { fetchUser, fetchAllLeagues, fetchSingleLeague, fetchAllDrafts, fetchSingleDraft, fetchRosters, fetchPlayers } from "js/sleeperApi.js";
+// import {  } from "js/constants.js";
 
 let userData = {};
 let leagues = [];
@@ -13,18 +14,34 @@ const userIdSpan = document.getElementById("user-id-span");
 const leagueOptions = document.getElementById("league-options");
 const leagueInfo = document.getElementById("league-info");
 
+const LS_USER_KEY = "sessionUserData";
+const LS_LEAGUE_KEY = "sessionLeagueData";
+
 const saveBtn = document.getElementById("save-button");
 const clearBtn = document.getElementById("clear-button");
 const selectedLeagueBtn = document.getElementById("selected-league-button");
 
 
 // Functions
+// General functions
 function getNflSeasonYear() {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
 
     return month < 4 ? year - 1 : year;
+}
+
+function showToast(message = "Saved successfully!") {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.remove("opacity-0");
+  toast.classList.add("opacity-100");
+
+  setTimeout(() => {
+    toast.classList.remove("opacity-100");
+    toast.classList.add("opacity-0");
+  }, 2500);
 }
 
 // Sleeper API calls
@@ -75,8 +92,72 @@ function clearLeagues() {
     leagueInfo.innerHTML = "";
 }
 
+function saveUserData() {
+    try {
+        if (!userData) throw new Error("No user data to save.");
+
+        localStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
+    } catch (error) {
+        console.error("Failed to save user data:", error);
+    }
+}
+
+function saveLeagueData() {
+    try {
+        if (!leagueData) throw new Error("No league data to save.");
+        
+        localStorage.setItem(LS_LEAGUE_KEY, JSON.stringify(leagueData));
+    } catch (error) {
+        console.error("Failed to save league data:", error);
+    }
+}
+
+function loadUserData() {
+    try {
+        const saved = localStorage.getItem(LS_USER_KEY);
+        return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+        console.error("Failed to load user data:", error);
+        return null;
+    }
+}
+
+function loadLeagueData() {
+    try {
+        const saved = localStorage.getItem(LS_LEAGUE_KEY);
+        return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+        console.error("Failed to load league data:", error);
+        return null;
+    }
+}
+
 
 // Event Listeners
+document.addEventListener("DOMContentLoaded", () => {
+
+    const savedUser = loadUserData();
+    if (savedUser) {
+        userData = savedUser;
+
+        userNameSpan.textContent = userData.display_name;
+        userIdSpan.textContent = userData.user_id;
+    }
+
+    const savedLeague = loadLeagueData();
+    if (savedLeague) {
+        leagueData = savedLeague;
+
+        leagueInfo.innerHTML = `
+            <p> League Name: ${leagueData.name}</p>
+            <p> League ID: ${leagueData.league_id}</p>
+            <p> ${leagueData.sport.toUpperCase()} ${leagueData.season} Season</p>
+            <p> League size: ${leagueData.total_rosters} teams</p>
+        `;
+    }
+});
+
+
 getUserBtn.addEventListener("click", async () => {
     clearUser();
 
@@ -90,6 +171,10 @@ getUserBtn.addEventListener("click", async () => {
 
         userNameSpan.textContent = userData.display_name;
         userIdSpan.textContent = userData.user_id;
+
+        saveUserData();
+        showToast("User data saved!");
+
     } catch (error) {
         alert("Failed to fetch user data. Please check the username and try again.");
     }
@@ -130,6 +215,9 @@ selectedLeagueBtn.addEventListener("click", async () => {
             <p> League size: ${leagueData.total_rosters} teams</p>
         `;
 
+        saveLeagueData();
+        showToast("League data saved!");
+
     } catch (error) {
         alert("Failed to fecth league info.");
     }
@@ -138,4 +226,5 @@ selectedLeagueBtn.addEventListener("click", async () => {
 
 clearBtn.addEventListener("click", () => {
     clearUser();
+    clearLeagues();
 })
