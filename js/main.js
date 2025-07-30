@@ -9,12 +9,13 @@ const getLeaguesBtn = document.getElementById("get-leagues-button");
 
 const userNameSpan = document.getElementById("user-name-span");
 const userIdSpan = document.getElementById("user-id-span");
-const leagueList = document.getElementById("league-list");
-const selectedLeague = document.getElementById("selected-league");
+
+const leagueOptions = document.getElementById("league-options");
 const leagueInfo = document.getElementById("league-info");
 
 const saveBtn = document.getElementById("save-button");
 const clearBtn = document.getElementById("clear-button");
+const selectedLeagueBtn = document.getElementById("selected-league-button");
 
 
 // Functions
@@ -43,9 +44,21 @@ async function fetchUserData(userName) {
 async function fetchAllLeagues(userId, season = getNflSeasonYear()) {
     const url = `https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`;
     const res = await fetch(url);
+
     if (!res.ok) throw new Error(`Leagues not found (${res.status})`);
+
     return res.json();
 }
+
+async function fetchLeagueData(leagueId) {
+    const url = `https://api.sleeper.app/v1/league/${leagueId}`;
+    const res = await fetch(url);
+
+    if (!res.ok) throw new Error(`League data not found (${res.status})`);
+
+    return res.json();
+}
+
 
 // Data management functions
 function clearUser() {
@@ -56,7 +69,9 @@ function clearUser() {
 }
 
 function clearLeagues() {
-    leagueList.innerHTML = "";
+    leagues = [];
+    leagueData = {};
+
     leagueInfo.innerHTML = "";
 }
 
@@ -89,14 +104,10 @@ getLeaguesBtn.addEventListener("click", async () => {
         console.log(`${userData.display_name} leagues:`, leagues);
         
         leagues.forEach(league => {
-            const li = document.createElement("li");
-            li.textContent = league.name;
-            leagueList.appendChild(li);
-            
             const option = document.createElement("option");
             option.value = league.league_id;
             option.textContent = league.name;
-            selectedLeague.appendChild(option);
+            leagueOptions.appendChild(option);
         });
         
     } catch (error) {
@@ -104,6 +115,25 @@ getLeaguesBtn.addEventListener("click", async () => {
     }
 });
 
+
+selectedLeagueBtn.addEventListener("click", async () => {
+    if (leagueOptions.value == "") return;
+
+    try {
+        leagueData = await fetchLeagueData(leagueOptions.value);
+        console.log(`${leagueData.name} info:`, leagueData);
+
+        leagueInfo.innerHTML = `
+            <p> League Name: ${leagueData.name}</p>
+            <p> League ID: ${leagueData.league_id}</p>
+            <p> ${leagueData.sport.toUpperCase()} ${leagueData.season} Season</p>
+            <p> League size: ${leagueData.total_rosters} teams</p>
+        `;
+
+    } catch (error) {
+        alert("Failed to fecth league info.");
+    }
+});
 
 
 clearBtn.addEventListener("click", () => {

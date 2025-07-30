@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="dist/styles.css">
     <title>Fantasy Football Assistant</title>
 </head>
-<body class="bg-slate-400 p-4">
+<body class="bg-slate-400 p-4 font-sans">
 
         <nav class="flex justify-between items-center px-4 py-2 bg-green-800 rounded">
         <ul class="flex space-x-4 list-none m-0 p-0">
@@ -34,6 +34,7 @@
         <div id="user-container" class="flex items-center p-2 border border-slate-300">
             <div id="user-input" class="flex flex-row items-center justify-start gap-4">
                 <h3 class="font-semibold p-2">Import User Info from Sleeper</h3>
+
                 <button type="button" id="get-user-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm">Get User Info</button>
             </div>
             <div id="user-output" class="px-4">
@@ -45,16 +46,18 @@
             </div>
         </div>
 
-        <div id="leagues-container" class=" border border-slate-300 p-4 mt-2">
-            <div id="league-list-container">
-                <h3 id="user-leagues-header" class="font-semibold p-2">Current Leagues</h3>
-                <ul id="league-list"></ul>
+        <div id="leagues-container" class="flex flex-row justify-between border border-slate-300 p-4 mt-2">
+            <div id="select-league-container" class="flex flex-col items-start justify-start">
+                <h3 class="font-semibold p-2">Current Leagues:</h3>
+
+                <select id="league-options" class="rounded-md border border-slate-200 shadow-sm p-2 bg-green-600 text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-700">
+                    <option value="" selected></option>
+                </select>
+
+                <button type="button" id="selected-league-button" class="px-4 py-2 mt-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm">Select a league</button>
             </div>
-            <div id="select-league-container" class="flex flex-row items-center justify-start">
-                <h3 class="font-semibold p-2">Select a league for use on the following pages:</h3>
-                <select id="selected-league" class="rounded-md border border-slate-200 shadow-sm p-2 bg-green-600 text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-700"></select>
-            </div>
-            <div id="league-info">
+
+            <div id="league-info" class="px-4 py-2">
 
             </div>
         </div>
