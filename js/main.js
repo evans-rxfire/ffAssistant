@@ -9,7 +9,6 @@ const getUserBtn = document.getElementById("get-user-button");
 const getLeaguesBtn = document.getElementById("get-leagues-button");
 
 const userNameSpan = document.getElementById("user-name-span");
-const userIdSpan = document.getElementById("user-id-span");
 
 const leagueOptions = document.getElementById("league-options");
 const leagueInfo = document.getElementById("league-info");
@@ -23,27 +22,6 @@ const selectedLeagueBtn = document.getElementById("selected-league-button");
 
 
 // Functions
-// General functions
-function getNflSeasonYear() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-
-    return month < 4 ? year - 1 : year;
-}
-
-function showToast(message = "Saved successfully!") {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.classList.remove("opacity-0");
-  toast.classList.add("opacity-100");
-
-  setTimeout(() => {
-    toast.classList.remove("opacity-100");
-    toast.classList.add("opacity-0");
-  }, 2500);
-}
-
 // Sleeper API calls
 async function fetchUserData(userName) {
     if (typeof userName !== "string") {
@@ -76,13 +54,34 @@ async function fetchLeagueData(leagueId) {
     return res.json();
 }
 
+// Fantasy Football 
+function getNflSeasonYear() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
 
-// Data management functions
+    return month < 4 ? year - 1 : year;
+}
+
+function getRosterPositions(leagueData) {
+    const positionCounts = {};
+
+    leagueData.roster_positions.forEach(pos => {
+        positionCounts[pos] = (positionCounts[pos] || 0) + 1;
+    });
+
+    return positionCounts;
+}
+
+// Data management
+function clearLocalStorage() {
+    //clears all saved data
+}
+
 function clearUser() {
     userData = {};
     
     userNameSpan.textContent = "";
-    userIdSpan.textContent = "";
 }
 
 function clearLeagues() {
@@ -132,6 +131,57 @@ function loadLeagueData() {
     }
 }
 
+// UI 
+function renderLeagueInfo(leagueData, containerElement) {
+    const positionCounts = getRosterPositions(leagueData);
+
+    const displayOrder = [
+        "QB",
+        "RB",
+        "WR",
+        "TE",
+        "FLEX",
+        "REC_FLEX",
+        "WRRB_FLEX",
+        "SUPER_FLEX",
+        "BN"
+    ];
+
+    const items = displayOrder
+        .filter(pos => positionCounts[pos])
+        .map(pos => {
+            const label = pos
+                .replace("WRRB_FLEX", "W/R")
+                .replace("REC_FLEX", "W/T")
+                .replace("SUPER_FLEX", "SuperFlex")
+                .replace("FLEX", "Flex")
+                .replace("BN", "Bench");
+            return `<span>${label}: ${positionCounts[pos]}</span>`;  // adjust styling
+        });
+
+    const positionHTML = `<p><strong>Roster Positions:</strong> ${items.join(', ')}</p>`;
+
+    containerElement.innerHTML = `
+        <p><strong>League Name:</strong> ${leagueData.name}</p>
+        <p>${leagueData.sport.toUpperCase()} ${leagueData.season} Season</p>
+        <p><strong>League size:</strong> ${leagueData.total_rosters} teams</p>
+        ${positionHTML}
+    `;
+}
+
+
+function showToast(message = "Saved successfully!") {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.remove("opacity-0");
+  toast.classList.add("opacity-100");
+
+  setTimeout(() => {
+    toast.classList.remove("opacity-100");
+    toast.classList.add("opacity-0");
+  }, 2500);
+}
+
 
 // Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
@@ -141,19 +191,13 @@ document.addEventListener("DOMContentLoaded", () => {
         userData = savedUser;
 
         userNameSpan.textContent = userData.display_name;
-        userIdSpan.textContent = userData.user_id;
     }
 
     const savedLeague = loadLeagueData();
     if (savedLeague) {
         leagueData = savedLeague;
 
-        leagueInfo.innerHTML = `
-            <p> League Name: ${leagueData.name}</p>
-            <p> League ID: ${leagueData.league_id}</p>
-            <p> ${leagueData.sport.toUpperCase()} ${leagueData.season} Season</p>
-            <p> League size: ${leagueData.total_rosters} teams</p>
-        `;
+        renderLeagueInfo(leagueData, leagueInfo);
     }
 });
 
@@ -170,7 +214,6 @@ getUserBtn.addEventListener("click", async () => {
         console.log("Fetched Sleeper user:", userData);
 
         userNameSpan.textContent = userData.display_name;
-        userIdSpan.textContent = userData.user_id;
 
         saveUserData();
         showToast("User data saved!");
@@ -208,23 +251,22 @@ selectedLeagueBtn.addEventListener("click", async () => {
         leagueData = await fetchLeagueData(leagueOptions.value);
         console.log(`${leagueData.name} info:`, leagueData);
 
-        leagueInfo.innerHTML = `
-            <p> League Name: ${leagueData.name}</p>
-            <p> League ID: ${leagueData.league_id}</p>
-            <p> ${leagueData.sport.toUpperCase()} ${leagueData.season} Season</p>
-            <p> League size: ${leagueData.total_rosters} teams</p>
-        `;
+        renderLeagueInfo(leagueData, leagueInfo);
 
         saveLeagueData();
         showToast("League data saved!");
 
     } catch (error) {
+        console.error("Error fetching league info:", error);
         alert("Failed to fecth league info.");
     }
 });
 
 
 clearBtn.addEventListener("click", () => {
+    // add a confirmation alert/window
+    
+    //clearLocalStorage();
     clearUser();
     clearLeagues();
 })
