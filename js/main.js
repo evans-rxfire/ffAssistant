@@ -15,6 +15,7 @@ const leagueInfo = document.getElementById("league-info");
 
 const LS_USER_KEY = "sessionUserData";
 const LS_LEAGUE_KEY = "sessionLeagueData";
+const ALL_LOCAL_STORAGE_KEYS = [LS_USER_KEY, LS_LEAGUE_KEY];
 
 const saveBtn = document.getElementById("save-button");
 const clearBtn = document.getElementById("clear-button");
@@ -73,9 +74,34 @@ function getRosterPositions(leagueData) {
     return positionCounts;
 }
 
-// Data management
-function clearLocalStorage() {
-    //clears all saved data
+// Data management    // should probably make this modular in future
+function clearLocalStorageKeys(keys) {
+    keys = Array.isArray(keys) ? keys : [keys];
+
+    const existingKeys = keys.filter(key => localStorage.getItem(key) !== null);
+
+    if (existingKeys.length === 0) {
+        showToast("No saved data to remove.");
+        return;
+    }
+
+    const labels = {
+        [LS_USER_KEY]: "your profile",
+        [LS_LEAGUE_KEY]: "league settings",
+        // Add future keys here
+    };
+
+    const itemsToClear = keys
+        .map(key => labels[key] || "some saved data")
+        .join(", ")
+        .replace(/, ([^,]*)$/, " and $1");
+
+    const confirmed = confirm(`Are you sure you want to clear ${itemsToClear}?`);
+    if (!confirmed) return;
+
+    keys.forEach(key => localStorage.removeItem(key));
+
+    showToast(`${itemsToClear} have been cleared.`);
 }
 
 function clearUser() {
@@ -264,9 +290,8 @@ selectedLeagueBtn.addEventListener("click", async () => {
 
 
 clearBtn.addEventListener("click", () => {
-    // add a confirmation alert/window
-    
-    //clearLocalStorage();
+    // add a confirmation alert/window?
     clearUser();
     clearLeagues();
+    clearLocalStorageKeys([LS_USER_KEY, LS_LEAGUE_KEY]);
 })
