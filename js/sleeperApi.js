@@ -60,6 +60,13 @@ export async function fetchLeagueRosters(leagueId) {
     return res.json();
 }
 
+export async function fetchLeagueMatchups(leagueId, week) {
+    const url = `https://api.sleeper.app/v1/league/${leagueId}/matchups/${week}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Matchups not found (${res.status})`);
+    return res.json();
+}
+
 // this function only needs to be called once a week
 export async function fetchPlayers() {
     const url = "https://api.sleeper.app/v1/players/nfl";
