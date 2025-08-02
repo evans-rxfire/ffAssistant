@@ -6,21 +6,21 @@
     <link rel="stylesheet" href="dist/styles.css">
     <title>Fantasy Football Assistant</title>
 </head>
-<body class="bg-slate-400 p-4 font-sans">
+<body class="bg-slate-400 p-4">
 
         <nav class="flex justify-between items-center px-4 py-2 bg-green-800 rounded">
         <ul class="flex space-x-4 list-none m-0 p-0">
-            <li><a href="index.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">League</a></li>
-            <li><a href="draft.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Draft</a></li>
-            <li><a href="startSit.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Start/Sit</a></li>
-            <li><a href="waivers.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-sky-400">Waivers</a></li>
+            <li><a href="index.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-blue-400">League</a></li>
+            <li><a href="draft.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-blue-400">Draft</a></li>
+            <li><a href="startSit.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-blue-400">Start/Sit</a></li>
+            <li><a href="waivers.html" class="text-slate-200 hover:underline hover:decoration-2 hover:decoration-blue-400">Waivers</a></li>
         </ul>
 
         <div class="text-slate-200 relative lg:ml-6">
-            <button id="dropdown-toggle" class="px-4 py-2 hover:underline hover:decoration-2 hover:decoration-sky-400">Other Apps</button>
+            <button id="dropdown-toggle" class="px-4 py-2 hover:underline hover:decoration-2 hover:decoration-blue-400">Other Apps</button>
 
             <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 bg-green-800 border border-slate-200 rounded shadow-md z-10 hidden">
-                <a href="" class="block px-4 py-2 text-sm hover:bg-sky-600" target="_blank" rel="noopener noreferrer">Under Construction</a>
+                <a class="block px-4 py-2 text-sm hover:bg-blue-600" target="_blank" rel="noopener noreferrer">Under Construction</a>
             </div>
         </div>
     </nav>
@@ -35,13 +35,13 @@
             <div id="user-input" class="flex flex-row items-center justify-start gap-4">
                 <h3 class="font-semibold p-2">Import User Info from Sleeper</h3>
 
-                <button type="button" id="get-user-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm">Get User Info</button>
+                <button type="button" id="get-user-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-blue-700 text-sm">Get User Info</button>
             </div>
             <div id="user-output" class="px-4">
-                <p>User Name: <span id="user-name-span"></span></p>
+                <p><strong>User Name:</strong> <span id="user-name-span"></span></p>
             </div>
             <div id="get-leagues" class="ml-auto flex items-center p-2">
-                <button type="button" id="get-leagues-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm">Get Leagues</button>
+                <button type="button" id="get-leagues-button" class="px-4 py-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-blue-700 text-sm">Get Leagues</button>
             </div>
         </div>
 
@@ -49,24 +49,28 @@
             <div id="select-league-container" class="flex flex-col items-start justify-start">
                 <h3 class="font-semibold p-2">Current Leagues:</h3>
 
-                <select id="league-options" class="rounded-md border border-slate-200 shadow-sm p-2 bg-green-600 text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-700">
+                <select id="league-options" class="rounded-md border border-slate-200 shadow-sm p-2 bg-green-600 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-700">
                     <option value="" selected></option>
                 </select>
 
-                <button type="button" id="selected-league-button" class="px-4 py-2 mt-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-sky-700 text-sm">Select a league</button>
+                <button type="button" id="selected-league-button" class="px-4 py-2 mt-2 rounded-md font-medium transition-colors bg-green-600 text-slate-200 hover:bg-blue-700 text-sm">Select a league</button>
             </div>
 
-            <div id="league-info" class="px-4 py-2">
+            <div id="league-info-container" class="px-4 py-2">
 
             </div>
         </div>
 
         <div id="button-container" class="flex flex-col sm:flex-row sm:justify-between gap-4 p-2">
-            <button type="button" id="clear-button" class="px-4 py-2 m-auto rounded-md font-medium transition-colors bg-amber-600 text-slate-200 hover:bg-sky-700 text-sm">Clear</button>
+            <button type="button" id="clear-button" class="px-4 py-2 ml-auto rounded-md font-medium transition-colors bg-orange-600 text-slate-200 hover:bg-blue-700 text-sm">Clear User/League Info</button>
+        </div>
+
+        <div id="team-week-container" class="border border-slate-300 p-4">
+            <h3 class="font-semibold px-2">This week's match-up</h3>
         </div>
 
         <div id="page-link-header" class="p-2">
-            <h3 class="font-semibold p-4">Get started with one of the options below:</h3>
+            <h3 class="font-semibold px-4">Get started with one of the options below:</h3>
         </div>
 
         <div id="page-link-container" class="flex flex-row gap-4 items-center justify-evenly border border-slate-300 p-4">
@@ -82,7 +86,7 @@
 
     <footer class="text-center mt-8 text-sm">
         <p>&copy; 2025 evans-rxfire. Licensed under the
-            <a href="LICENSE" target="_blank" rel="noopener noreferrer" class="text-sky-600 hover:underline hover:decoration-2">MIT License</a>.
+            <a href="LICENSE" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline hover:decoration-2">MIT License</a>.
         </p>
     </footer>
 

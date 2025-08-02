@@ -1,9 +1,11 @@
 // import { fetchUser, fetchAllLeagues, fetchSingleLeague, fetchAllDrafts, fetchSingleDraft, fetchRosters, fetchPlayers } from "js/sleeperApi.js";
 // import {  } from "js/constants.js";
 
+let NflState = {};
 let userData = {};
 let leagues = [];
 let leagueData = {};
+let leagueUsers = {};
 
 const getUserBtn = document.getElementById("get-user-button");
 const getLeaguesBtn = document.getElementById("get-leagues-button");
@@ -11,7 +13,7 @@ const getLeaguesBtn = document.getElementById("get-leagues-button");
 const userNameSpan = document.getElementById("user-name-span");
 
 const leagueOptions = document.getElementById("league-options");
-const leagueInfo = document.getElementById("league-info");
+const leagueInfoContainer = document.getElementById("league-info-container");
 
 const LS_USER_KEY = "sessionUserData";
 const LS_LEAGUE_KEY = "sessionLeagueData";
@@ -24,6 +26,15 @@ const selectedLeagueBtn = document.getElementById("selected-league-button");
 
 // Functions
 // Sleeper API calls
+async function getNflState() {
+    const url = "https://api.sleeper.app/v1/state/nfl";
+    const res = await fetch(url);
+
+    if (!res.ok) throw new Error(`NFL state not found (${res.status})`);
+
+    return res.json();
+}
+
 async function fetchUserData(userName) {
     if (typeof userName !== "string") {
         throw new Error("Invalid username input.");
@@ -37,7 +48,10 @@ async function fetchUserData(userName) {
     return res.json();
 }
 
-async function fetchAllLeagues(userId, season = getNflSeasonYear()) {
+async function fetchAllLeagues(userId) {
+    const nflState = await getNflState();
+    const season = nflState.season;
+
     const url = `https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`;
     const res = await fetch(url);
 
@@ -55,15 +69,25 @@ async function fetchLeagueData(leagueId) {
     return res.json();
 }
 
-// Fantasy Football 
-function getNflSeasonYear() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
+async function fetchLeagueUsers(leagueId) {
+    const url = `https://api.sleeper.app/v1/league/${leagueId}/users`;
+    const res = await fetch(url);
 
-    return month < 4 ? year - 1 : year;
+    if (!res.ok) throw new Error(`League users not found (${res.status})`);
+
+    return res.json();
 }
 
+async function fetchLeagueRosters(leagueId) {
+    const url = `https://api.sleeper.app/v1/league/${leagueId}/rosters`;
+    const res = await fetch(url);
+
+    if (!res.ok) throw new Error(`Rosters not found (${res.status})`);
+
+    return res.json();
+}
+
+// Fantasy Football 
 function getRosterPositions(leagueData) {
     const positionCounts = {};
 
@@ -72,6 +96,33 @@ function getRosterPositions(leagueData) {
     });
 
     return positionCounts;
+}
+
+function determineLeagueType(leagueData) {
+    const settings = leagueData.settings || {};
+
+    if (settings.best_ball === 1) return "Best Ball";
+    if (settings.taxi_slots > 0) return "Dynasty";
+
+    return "Redraft";
+}
+
+function determineLeagueScoring(leagueData) {
+    const recScoring = leagueData?.scoring_settings?.rec;
+
+    if (recScoring === 0) return "Standard";
+    if (recScoring === 0.5) return "Half-PPR";
+    if (recScoring === 1) return "PPR";
+
+    return "Custom Scoring";
+}
+
+function getTeamName(leagueUsers, userData) {
+    const userElement = leagueUsers.find(user => user.user_id === userData.user_id);
+
+    if (!userElement) return "Your team";
+
+    return userElement?.metadata?.team_name || "Unnamed team";
 }
 
 // Data management    // should probably make this modular in future
@@ -114,7 +165,7 @@ function clearLeagues() {
     leagues = [];
     leagueData = {};
 
-    leagueInfo.innerHTML = "";
+    leagueInfoContainer.innerHTML = "";
 }
 
 function saveUserData() {
@@ -134,6 +185,12 @@ function saveLeagueData() {
         localStorage.setItem(LS_LEAGUE_KEY, JSON.stringify(leagueData));
     } catch (error) {
         console.error("Failed to save league data:", error);
+    }
+}
+
+function saveLeagueUsers() {
+    if (leagueUsers) {
+        localStorage.setItem("leagueUsers", JSON.stringify(leagueUsers));
     }
 }
 
@@ -157,8 +214,13 @@ function loadLeagueData() {
     }
 }
 
+function loadLeagueUsers() {
+    const data = localStorage.getItem("leagueUsers");
+    return data ? JSON.parse(data) : null;
+}
+
 // UI 
-function renderLeagueInfo(leagueData, containerElement) {
+function renderLeagueInformation(leagueData, containerElement, leagueUsers, userData) {
     const positionCounts = getRosterPositions(leagueData);
 
     const displayOrder = [
@@ -189,12 +251,11 @@ function renderLeagueInfo(leagueData, containerElement) {
 
     containerElement.innerHTML = `
         <p><strong>League Name:</strong> ${leagueData.name}</p>
-        <p>${leagueData.sport.toUpperCase()} ${leagueData.season} Season</p>
-        <p><strong>League size:</strong> ${leagueData.total_rosters} teams</p>
+        <p><strong>League Type:</strong> ${leagueData.season} ${leagueData.total_rosters}-team ${determineLeagueType(leagueData)} ${determineLeagueScoring(leagueData)}</p>  
         ${positionHTML}
+        <p><strong>Team Name:</strong> ${getTeamName(leagueUsers, userData)}</p>
     `;
 }
-
 
 function showToast(message = "Saved successfully!") {
   const toast = document.getElementById("toast");
@@ -210,30 +271,39 @@ function showToast(message = "Saved successfully!") {
 
 
 // Event Listeners
-document.addEventListener("DOMContentLoaded", () => {
-
+document.addEventListener("DOMContentLoaded", async () => {
     const savedUser = loadUserData();
     if (savedUser) {
         userData = savedUser;
-
         userNameSpan.textContent = userData.display_name;
     }
 
     const savedLeague = loadLeagueData();
-    if (savedLeague) {
-        leagueData = savedLeague;
+    const savedUsers = loadLeagueUsers();
 
-        renderLeagueInfo(leagueData, leagueInfo);
+    if (savedLeague && savedUsers && userData?.user_id) {
+        leagueData = savedLeague;
+        leagueUsers = savedUsers;
+
+        renderLeagueInformation(leagueData, leagueInfoContainer, leagueUsers, userData);
     }
 });
 
 
 getUserBtn.addEventListener("click", async () => {
+    getUserBtn.disabled = true;
+    const originalText = getUserBtn.textContent;
+    getUserBtn.textContent = "Loading...";
+
     clearUser();
 
     const userName = prompt("Please enter your Sleeper username:");
 
-    if (!userName?.trim()) return;
+    if (!userName?.trim()) {
+        getUserBtn.disabled = false;
+        getUserBtn.textContent = originalText;
+        return;
+    }
 
     try {
         userData = await fetchUserData(userName);
@@ -246,17 +316,31 @@ getUserBtn.addEventListener("click", async () => {
 
     } catch (error) {
         alert("Failed to fetch user data. Please check the username and try again.");
+    } finally {
+        getUserBtn.disabled = false;
+        getUserBtn.textContent = originalText;
     }
 });
 
 
 getLeaguesBtn.addEventListener("click", async () => {
+    getLeaguesBtn.disabled = true;
+    const originalText = getLeaguesBtn.textContent;
+    getLeaguesBtn.textContent = "Loading...";
+    
     clearLeagues();
     
     try {
         leagues = await fetchAllLeagues(userData.user_id)
-        console.log(`${userData.display_name} leagues:`, leagues);
         
+        console.log(`${userData.display_name} leagues:`, leagues);
+
+        if (!userData?.user_id) {
+            alert("No user found. Please fetch user data first.");
+            return;
+        }
+
+        leagueOptions.innerHTML = "";
         leagues.forEach(league => {
             const option = document.createElement("option");
             option.value = league.league_id;
@@ -266,31 +350,49 @@ getLeaguesBtn.addEventListener("click", async () => {
         
     } catch (error) {
         alert("Failed to fetch user leagues.");
+    } finally {
+        getLeaguesBtn.disabled = false;
+        getLeaguesBtn.textContent = originalText;
     }
 });
 
 
 selectedLeagueBtn.addEventListener("click", async () => {
-    if (leagueOptions.value == "") return;
+    selectedLeagueBtn.disabled = true;
+    const originalText = selectedLeagueBtn.textContent;
+    selectedLeagueBtn.textContent = "Loading...";
+    
+    if (leagueOptions.value == "") {
+        selectedLeagueBtn.disabled = false;
+        selectedLeagueBtn.textContent = originalText;
+        return;
+    } 
 
     try {
         leagueData = await fetchLeagueData(leagueOptions.value);
         console.log(`${leagueData.name} info:`, leagueData);
 
-        renderLeagueInfo(leagueData, leagueInfo);
+        leagueUsers = await fetchLeagueUsers(leagueOptions.value);
+        console.log(`${leagueData.name} users:`, leagueUsers);
+
+        saveLeagueUsers();
+
+        renderLeagueInformation(leagueData, leagueInfoContainer, leagueUsers, userData);
 
         saveLeagueData();
         showToast("League data saved!");
 
     } catch (error) {
         console.error("Error fetching league info:", error);
-        alert("Failed to fecth league info.");
+        alert("Failed to fetch league info.");
+    } finally {
+        selectedLeagueBtn.disabled = false;
+        selectedLeagueBtn.textContent = originalText;
     }
 });
 
 
 clearBtn.addEventListener("click", () => {
-    // add a confirmation alert/window?
     clearUser();
     clearLeagues();
     clearLocalStorageKeys([LS_USER_KEY, LS_LEAGUE_KEY]);

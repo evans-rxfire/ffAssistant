@@ -1,13 +1,11 @@
-function getNflSeasonYear() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-
-    return month < 4 ? year - 1 : year;
+// sleeperApi.js
+ export async function getNflState() {
+    const url = "https://api.sleeper.app/v1/state/nfl";
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`NFL state not found (${res.status})`);
+    return res.json();
 }
 
-
-// sleeperApi.js
 export async function fetchUser(userName) {
     if (typeof userName !== "string") {
         throw new Error("Invalid username input.");
@@ -18,17 +16,26 @@ export async function fetchUser(userName) {
     return res.json();
 }
 
-export async function fetchAllLeagues(userId, season = getNflSeasonYear()) {
+export async function fetchAllLeagues(userId) {
+    const nflState = await getNflState();
+    const season = nflState.season;
     const url = `https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Leagues not found (${res.status})`);
     return res.json();
 }
 
-export async function fetchSingleLeague(leagueId) {
+export async function fetchLeagueData(leagueId) {
     const url = `https://api.sleeper.app/v1/league/${leagueId}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`League not found (${res.status})`);
+    return res.json();
+}
+
+export async function fetchLeagueUsers(leagueId) {
+    const url = `https://api.sleeper.app/v1/leauge/${leagueId}/users`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`League users not found (${res.status})`);
     return res.json();
 }
 
@@ -46,7 +53,7 @@ export async function fetchSingleDraft(draftId) {
     return res.json();
 }
 
-export async function fetchRosters(leagueId) {
+export async function fetchLeagueRosters(leagueId) {
     const url = `https://api.sleeper.app/v1/league/${leagueId}/rosters`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Rosters not found (${res.status})`);
