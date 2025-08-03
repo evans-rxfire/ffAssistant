@@ -1,7 +1,7 @@
 // import { fetchUser, fetchAllLeagues, fetchSingleLeague, fetchAllDrafts, fetchSingleDraft, fetchRosters, fetchPlayers } from "js/sleeperApi.js";
 // import {  } from "js/constants.js";
 
-let NflState = {};
+let nflState = {};
 let userData = {};
 let leagues = [];
 let leagueData = {};
@@ -17,6 +17,10 @@ const userNameSpan = document.getElementById("user-name-span");
 const leagueOptions = document.getElementById("league-options");
 const leagueInfoContainer = document.getElementById("league-info-container");
 
+const userTeamContainer = document.getElementById("user-team-container");
+const opponentTeamContainer = document.getElementById("opponent-team-container");
+
+const LS_NFLSTATE_KEY = "nflState";
 const LS_USER_KEY = "userData";
 const LS_LEAGUE_KEY = "leagueData";
 const LS_USERS_KEY = "leagueUsers";
@@ -24,6 +28,7 @@ const LS_ROSTERS_KEY = "leagueRosters";
 const LS_MATCHUPS_KEY = "leagueMatchups";
 
 const ALL_LOCAL_STORAGE_KEYS = [
+    LS_NFLSTATE_KEY,
     LS_USER_KEY,
     LS_LEAGUE_KEY,
     LS_USERS_KEY,
@@ -32,10 +37,15 @@ const ALL_LOCAL_STORAGE_KEYS = [
 ]; //for future use - adding more keys
 
 const localStorageRegistry = {
+    [LS_NFLSTATE_KEY]: {
+        get: () => nflState,
+        set: (data) => { nflState = data ?? {}; },
+        label: "NFL info" 
+    },
     [LS_USER_KEY]: {
-    get: () => userData,
-    set: (data) => { userData = data ?? {}; },
-    label: "your profile"
+        get: () => userData,
+        set: (data) => { userData = data ?? {}; },
+        label: "your profile"
     },
     [LS_LEAGUE_KEY]: {
         get: () => leagueData,
@@ -89,6 +99,7 @@ async function getNflState() {
     return res.json();
 }
 
+
 async function fetchUserData(userName) {
     if (typeof userName !== "string") {
         throw new Error("Invalid username input.");
@@ -102,6 +113,7 @@ async function fetchUserData(userName) {
     return res.json();
 }
 
+
 async function fetchAllLeagues(userId) {
     const nflState = await getNflState();
     const season = nflState.season;
@@ -114,6 +126,7 @@ async function fetchAllLeagues(userId) {
     return res.json();
 }
 
+
 async function fetchLeagueData(leagueId) {
     const url = `https://api.sleeper.app/v1/league/${leagueId}`;
     const res = await fetch(url);
@@ -122,6 +135,7 @@ async function fetchLeagueData(leagueId) {
 
     return res.json();
 }
+
 
 async function fetchLeagueUsers(leagueId) {
     const url = `https://api.sleeper.app/v1/league/${leagueId}/users`;
@@ -132,6 +146,7 @@ async function fetchLeagueUsers(leagueId) {
     return res.json();
 }
 
+
 async function fetchLeagueRosters(leagueId) {
     const url = `https://api.sleeper.app/v1/league/${leagueId}/rosters`;
     const res = await fetch(url);
@@ -141,6 +156,7 @@ async function fetchLeagueRosters(leagueId) {
     return res.json();
 }
 
+
 async function fetchLeagueMatchups(leagueId, week) {
     const url = `https://api.sleeper.app/v1/league/${leagueId}/matchups/${week}`;
     const res = await fetch(url);
@@ -149,6 +165,7 @@ async function fetchLeagueMatchups(leagueId, week) {
 
     return res.json();
 }
+
 
 async function loadPlayerData() {
   const db = await dbPromise;
@@ -198,6 +215,7 @@ async function loadPlayerData() {
   }
 }
 
+
 // Fantasy Football 
 function getRosterPositions(leagueData) {
     const positionCounts = {};
@@ -209,6 +227,7 @@ function getRosterPositions(leagueData) {
     return positionCounts;
 }
 
+
 function determineLeagueType(leagueData) {
     const settings = leagueData.settings || {};
 
@@ -217,6 +236,7 @@ function determineLeagueType(leagueData) {
 
     return "Redraft";
 }
+
 
 function determineLeagueScoring(leagueData) {
     const recScoring = leagueData?.scoring_settings?.rec;
@@ -228,6 +248,7 @@ function determineLeagueScoring(leagueData) {
     return "Custom Scoring";
 }
 
+
 function getTeamName(leagueUsers, userData) {
     const userElement = leagueUsers.find(user => user.user_id === userData.user_id);
 
@@ -235,6 +256,7 @@ function getTeamName(leagueUsers, userData) {
 
     return userElement?.metadata?.team_name || "Unnamed team";
 }
+
 
 // Data management    // should probably make this modular in future
 // generic local storage helpers
@@ -247,6 +269,7 @@ function saveToLocalStorage(key, value) {
     }
 }
 
+
 function loadFromLocalStorage(key) {
     try {
         const data = localStorage.getItem(key);
@@ -257,6 +280,7 @@ function loadFromLocalStorage(key) {
     }
 }
 
+
 function removeFromLocalStorage(key) {
     try {
         localStorage.removeItem(key);
@@ -265,6 +289,7 @@ function removeFromLocalStorage(key) {
     }
 }
 
+
 // save/load/clear all
 function saveAllData() {
     Object.entries(localStorageRegistry).forEach(([key, { get }]) => {
@@ -272,12 +297,14 @@ function saveAllData() {
     });
 }
 
+
 function loadAllData() {
     Object.entries(localStorageRegistry).forEach(([key, { set }]) => {
         const saved = loadFromLocalStorage(key);
         set(saved);
     });
 }
+
 
 function clearAllData() {
     clearAppState();
@@ -296,23 +323,43 @@ function clearAllData() {
     showToast(`${itemsToClear} have been cleared.`);
 }
 
+
 // app state reset helpers
 function clearUser() {
     userData = {};
     userNameSpan.textContent = "";
 }
 
+
 function clearLeagues() {
     leagues = [];
     leagueData = {};
+    
     leagueInfoContainer.innerHTML = "";
 }
+
+
+function clearMatchups() {
+    leagueUsers = [];
+    leagueRosters = [];
+    leagueMatchups = [];
+
+    userTeamContainer.innerHTML = "";
+    opponentTeamContainer.innerHTML = "";
+}
+
+function clearNflState() {
+    nflState = {};
+}
+
 
 function clearAppState() {
     clearUser();
     clearLeagues();
-    leagueUsers = [];
+    clearNflState();
+    clearMatchups();
 }
+
 
 // UI 
 function renderLeagueInformation(leagueData, containerElement, leagueUsers, userData) {
@@ -352,9 +399,11 @@ function renderLeagueInformation(leagueData, containerElement, leagueUsers, user
     `;
 }
 
+
 function renderMatchupInformation(userData, leagueData, leagueRosters, leagueMatchups, containerElement) {
 
 }
+
 
 function showToast(message = "Saved successfully!") {
   const toast = document.getElementById("toast");
@@ -457,6 +506,10 @@ selectedLeagueBtn.addEventListener("click", async () => {
     selectedLeagueBtn.disabled = true;
     const originalText = selectedLeagueBtn.textContent;
     selectedLeagueBtn.textContent = "Loading...";
+
+    clearLeagues();
+    clearNflState();
+    clearMatchups();
     
     if (leagueOptions.value == "") {
         selectedLeagueBtn.disabled = false;
@@ -471,11 +524,22 @@ selectedLeagueBtn.addEventListener("click", async () => {
         leagueUsers = await fetchLeagueUsers(leagueOptions.value);
         console.log(`${leagueData.name} users:`, leagueUsers);
 
-        saveToLocalStorage(LS_USERS_KEY, leagueUsers);
+        leagueRosters = await fetchLeagueRosters(leagueOptions.value);
+        console.log(`${leagueData.name} rosters:`, leagueRosters);
+
+        nflState = await getNflState();
+        console.log(nflState);
+
+        leagueMatchups = await fetchLeagueMatchups(leagueOptions.value, nflState.week);
+        console.log(`${leagueData.name} matchups:`, leagueMatchups);
 
         renderLeagueInformation(leagueData, leagueInfoContainer, leagueUsers, userData);
+        // renderMatchupInformation();
 
         saveToLocalStorage(LS_LEAGUE_KEY, leagueData);
+        saveToLocalStorage(LS_USERS_KEY, leagueUsers);
+        saveToLocalStorage(LS_ROSTERS_KEY, leagueRosters);
+        saveToLocalStorage(LS_MATCHUPS_KEY, leagueMatchups);
         showToast("League data saved!");
 
     } catch (error) {
