@@ -27,8 +27,8 @@
     
     <main class="max-w-6xl mx-auto bg-green-800 text-slate-200 p-2 mt-4">
         <header class="text-center mb-6">
-            <h1 class="text-2xl font-bold">Fantasty Footabll Assistant</h1>
-            <h2 class="text-xl font-bold">Get Your User and League Information from <a href="https://sleeper.com" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline hover:decoration-2 hover:decoration-blue-400">Sleeper</a></h2>
+            <h1 class="text-3xl font-bold">Fantasty Footabll Assistant</h1>
+            <h2 class="text-2xl font-bold">Get Your User and League Information from <a href="https://sleeper.com" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline hover:decoration-2 hover:decoration-blue-400">Sleeper</a></h2>
         </header>
 
         <div id="user-container" class="flex items-center p-2 border border-slate-300">
@@ -63,12 +63,14 @@
             <button type="button" id="clear-button" class="px-4 py-2 ml-auto rounded-md font-medium transition-colors bg-orange-600 text-slate-200 hover:bg-blue-700 text-sm">Clear User/League Info</button>
         </div>
 
-        <div id="team-week-container" class="border border-slate-300 p-4">
-            <h3 class="font-semibold px-2">This week's match-up:</h3>
+        <div id="matchup-container" class="border border-slate-300 p-4">
+            <h3 class="font-semibold text-xl text-center px-2">This week's match-up:</h3>
+            <div id="teams-container" class="flex flex-row justify-evenly gap-8">
+                <div id="user-team-container" class="p-2"></div>
 
-            <div id="user-team-container"></div>
+                <div id="opponent-team-container" class="p-2"></div>
+            </div>
 
-            <div id="opponent-team-container"></div>
         </div>
 
         <div id="page-link-header" class="p-2">
