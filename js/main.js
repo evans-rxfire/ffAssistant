@@ -466,8 +466,6 @@ function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, use
     const opponentTeamName = opponentInfo.user?.metadata?.team_name || "No team name found";
     console.log(`${opponentTeamName}'s Roster:`, opponentInfo.roster);
 
-    matchupWeek.textContent = nflState.week;
-
     const renderStartersList = (starters) => {
     return `<ul>
         ${starters.map(playerId => {
@@ -478,7 +476,6 @@ function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, use
     </ul>`;
     };
 
-    // Render user team info
     userTeamContainer.innerHTML = `
         <h2 class="text-xl font-semibold">${userTeamName}</h2>
         <div class="flex flex-row gap-8 text-sm">
@@ -486,50 +483,52 @@ function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, use
             <p class="ml-auto">FTPS: ${userRoster.settings.fpts}</p>
         </div>
         <div>
-            <h3 class="text-lg font-semibold py-2">Starters</h3>
+            <h3 class="text-lg text-center font-semibold py-2">Starters</h3>
             ${renderStartersList(userMatchup.starters)}
         </div>
     `;
 
-    // Render opponent team info
     opponentTeamContainer.innerHTML = `
         <h2 class="text-xl font-semibold">${opponentTeamName}</h2>
         <div class="flex flex-row gap-8 text-sm">
             <p>Record: ${opponentInfo.roster.settings.wins}-${opponentInfo.roster.settings.losses}</p>
             <p class="ml-auto">FTPS: ${opponentInfo.roster.settings.fpts}</p>
         </div>
-        <h3 class="text-lg font-semibold py-2">Starters</h3>
+        <h3 class="text-lg text-center font-semibold py-2">Starters</h3>
         ${renderStartersList(opponentInfo.matchup.starters)}
     `;
 
     const renderRosterPositionsList = (rosterPositions) => {
-
-    const displayOrder = [
-        "QB",
-        "RB",
-        "WR",
-        "TE",
-        "FLEX",
-        "REC_FLEX",
-        "WRRB_FLEX",
-        "SUPER_FLEX"
-    ];
-
-    const filteredPositions = rosterPositions.filter(pos => pos !== "BN" && displayOrder.includes(pos));
-
-    const items = filteredPositions.map(pos => {
-        const label = pos
-            .replace("WRRB_FLEX", "W/R")
-            .replace("REC_FLEX", "W/T")
-            .replace("SUPER_FLEX", "SuperFlex")
-            .replace("FLEX", "Flex");
-        return `<li><span>${label}</span></li>`;
-  });
-
-    return `<ul>${items.join('')}</ul>`;
+        const displayOrder = [
+            "QB",
+            "RB",
+            "WR",
+            "TE",
+            "FLEX",
+            "REC_FLEX",
+            "WRRB_FLEX",
+            "SUPER_FLEX"
+        ];
+        const filteredPositions = rosterPositions.filter(pos => pos !== "BN" && displayOrder.includes(pos));
+        const items = filteredPositions.map(pos => {
+            const label = pos
+                .replace("WRRB_FLEX", "W/R")
+                .replace("REC_FLEX", "W/T")
+                .replace("SUPER_FLEX", "SuperFlex")
+                .replace("FLEX", "Flex");
+            return `<li class="p-2 mt-1 mb-1 border border-transparent"><span>${label}</span></li>`;
+        });
+        return `<ul>${items.join('')}</ul>`;
     };
 
-    rosterContainer.innerHTML = renderRosterPositionsList(leagueData.roster_positions);
+    rosterContainer.innerHTML = `
+        <h2 class="text-xl font-semibold">VS.</h2>
+        <div class="gap-8 text-sm">
+            <p class="text-center">Week ${nflState.week}</p>
+        </div>
+        <h3 class="text-lg font-semibold py-2">Positions</h3>
+        ${renderRosterPositionsList(leagueData.roster_positions)}
+    `;
 }
 
 
