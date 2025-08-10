@@ -18,7 +18,9 @@ const leagueOptions = document.getElementById("league-options");
 const leagueInfoContainer = document.getElementById("league-info-container");
 
 const matchupContainer = document.getElementById("matchup-container");
+const matchupWeek = document.getElementById("matchup-week");
 const userTeamContainer = document.getElementById("user-team-container");
+const rosterContainer = document.getElementById("roster-container");
 const opponentTeamContainer = document.getElementById("opponent-team-container");
 
 const LS_NFLSTATE_KEY = "nflState";
@@ -428,7 +430,7 @@ function renderLeagueInformation(leagueData, containerElement, leagueUsers, user
 }
 
 
-function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, userTeamContainer, opponentTeamContainer) {
+function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, userTeamContainer, opponentTeamContainer, leagueData, rosterContainer) {
     const userTeamName = getTeamName(userData, leagueUsers);
     const userRoster = leagueRosters.find(r => r.owner_id === userData.user_id);
     if (!userRoster) {
@@ -464,12 +466,14 @@ function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, use
     const opponentTeamName = opponentInfo.user?.metadata?.team_name || "No team name found";
     console.log(`${opponentTeamName}'s Roster:`, opponentInfo.roster);
 
+    matchupWeek.textContent = nflState.week;
+
     const renderStartersList = (starters) => {
     return `<ul>
         ${starters.map(playerId => {
         const player = playerData[playerId];
         if (!player) return `<li>Unknown Player (${playerId})</li>`;
-        return `<li>${player.full_name} ${player.position} ${player.team}</li>`;
+        return `<li class="p-2 mt-1 mb-1 border border-slate-300">${player.full_name} ${player.position} ${player.team}</li>`;
         }).join('')}
     </ul>`;
     };
@@ -481,8 +485,10 @@ function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, use
             <p>Record: ${userRoster.settings.wins}-${userRoster.settings.losses}</p>
             <p class="ml-auto">FTPS: ${userRoster.settings.fpts}</p>
         </div>
-        <h3 class="text-lg font-semibold py-2">Starters</h3>
-        ${renderStartersList(userMatchup.starters)}
+        <div>
+            <h3 class="text-lg font-semibold py-2">Starters</h3>
+            ${renderStartersList(userMatchup.starters)}
+        </div>
     `;
 
     // Render opponent team info
@@ -495,6 +501,35 @@ function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, use
         <h3 class="text-lg font-semibold py-2">Starters</h3>
         ${renderStartersList(opponentInfo.matchup.starters)}
     `;
+
+    const renderRosterPositionsList = (rosterPositions) => {
+
+    const displayOrder = [
+        "QB",
+        "RB",
+        "WR",
+        "TE",
+        "FLEX",
+        "REC_FLEX",
+        "WRRB_FLEX",
+        "SUPER_FLEX"
+    ];
+
+    const filteredPositions = rosterPositions.filter(pos => pos !== "BN" && displayOrder.includes(pos));
+
+    const items = filteredPositions.map(pos => {
+        const label = pos
+            .replace("WRRB_FLEX", "W/R")
+            .replace("REC_FLEX", "W/T")
+            .replace("SUPER_FLEX", "SuperFlex")
+            .replace("FLEX", "Flex");
+        return `<li><span>${label}</span></li>`;
+  });
+
+    return `<ul>${items.join('')}</ul>`;
+    };
+
+    rosterContainer.innerHTML = renderRosterPositionsList(leagueData.roster_positions);
 }
 
 
@@ -535,7 +570,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (leagueData && leagueUsers && userData?.user_id) {
         renderLeagueInformation(leagueData, leagueInfoContainer, leagueUsers, userData);
-        renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, userTeamContainer, opponentTeamContainer);
+        renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, userTeamContainer, opponentTeamContainer, leagueData, rosterContainer);
     }
 });
 
@@ -642,7 +677,7 @@ selectedLeagueBtn.addEventListener("click", async () => {
         console.log(`${leagueData.name} matchups:`, leagueMatchups);
 
         renderLeagueInformation(leagueData, leagueInfoContainer, leagueUsers, userData);
-        renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, userTeamContainer, opponentTeamContainer);
+        renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, userTeamContainer, opponentTeamContainer, leagueData, rosterContainer);
 
         saveToLocalStorage(LS_LEAGUE_KEY, leagueData);
         saveToLocalStorage(LS_USERS_KEY, leagueUsers);
