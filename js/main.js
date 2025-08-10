@@ -228,20 +228,18 @@ async function loadPlayerData() {
         const res = await fetch('https://api.sleeper.app/v1/players/nfl');
         const data = await res.json();
 
-        // Convert data object to array
         const playersArray = Object.values(data).map(player => {
         if (!player.player_id) player.player_id = player.player_id || player.id || null; 
         return player;
         });
 
-        // Save players and update fetch time
         await savePlayers(playersArray);
         await setLastFetchTime(now);
 
-        return data; // you can also return playersArray if you prefer
+        return data;
     } catch (err) {
         console.error("Failed to fetch player data:", err);
-        return await loadPlayersFromDB(); // fallback to stored data if fetch fails
+        return await loadPlayersFromDB();
     }
 }
 
@@ -429,8 +427,140 @@ function renderLeagueInformation(leagueData, containerElement, leagueUsers, user
     `;
 }
 
+// create weekly matchup in index.html
+function createElement(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text) el.textContent = text;
+    return el;
+}
+
+function getOpponentInfo(userMatchup, matchups, rosters, users) {
+    const opponentMatchup = matchups.find(m => 
+        m.matchup_id === userMatchup.matchup_id && 
+        m.roster_id !== userMatchup.roster_id
+    );
+    if (!opponentMatchup) return null;
+
+    const opponentRoster = rosters.find(r => r.roster_id === opponentMatchup.roster_id);
+    if (!opponentRoster) return null;
+
+    const opponentUser = users.find(u => u.user_id === opponentRoster.owner_id);
+    return { matchup: opponentMatchup, roster: opponentRoster, user: opponentUser };
+}
+
+function renderStartersList(starters, playerData) {
+    const ul = createElement("ul");
+    starters.forEach(playerId => {
+        const li = createElement("li", "p-2 mt-1 mb-1 border border-slate-300");
+        const player = playerData[playerId];
+        li.textContent = player 
+            ? `${player.full_name} ${player.position} ${player.team}`
+            : `Unknown Player (${playerId})`;
+        ul.appendChild(li);
+    });
+    return ul;
+}
+
+function renderRosterPositionsList(rosterPositions) {
+    const displayOrder = [
+        "QB", "RB", "WR", "TE", "FLEX", "REC_FLEX", "WRRB_FLEX", "SUPER_FLEX"
+    ];
+    const ul = createElement("ul");
+    rosterPositions
+        .filter(pos => pos !== "BN" && displayOrder.includes(pos))
+        .forEach(pos => {
+            const label = pos
+                .replace("WRRB_FLEX", "W/R")
+                .replace("REC_FLEX", "W/T")
+                .replace("SUPER_FLEX", "SuperFlex")
+                .replace("FLEX", "Flex");
+            const li = createElement("li", "p-2 mt-1 mb-1 border border-transparent");
+            li.appendChild(createElement("span", null, label));
+            ul.appendChild(li);
+        });
+    return ul;
+}
+
+function renderTeamContainer(teamName, wins, losses, fpts, startersList) {
+    const container = document.createDocumentFragment();
+
+    container.appendChild(createElement("h2", "text-xl font-semibold", teamName));
+
+    const recordDiv = createElement("div", "flex flex-row gap-8 text-sm");
+    recordDiv.appendChild(createElement("p", null, `Record: ${wins}-${losses}`));
+    const fptsP = createElement("p", "ml-auto", `FTPS: ${fpts}`);
+    recordDiv.appendChild(fptsP);
+    container.appendChild(recordDiv);
+
+    const startersHeader = createElement("h3", "text-lg text-center font-semibold py-2", "Starters");
+    container.appendChild(startersHeader);
+    container.appendChild(startersList);
+
+    return container;
+}
+
+function renderRosterContainer(week, positionsList) {
+    const container = document.createDocumentFragment();
+
+    container.appendChild(createElement("h2", "text-xl font-semibold", "VS."));
+    const weekDiv = createElement("div", "gap-8 text-sm");
+    weekDiv.appendChild(createElement("p", "text-center", `Week ${week}`));
+    container.appendChild(weekDiv);
+
+    container.appendChild(createElement("h3", "text-lg font-semibold py-2", "Positions"));
+    container.appendChild(positionsList);
+
+    return container;
+}
 
 function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, userTeamContainer, opponentTeamContainer, leagueData, rosterContainer) {
+    const userTeamName = getTeamName(userData, leagueUsers);
+    const userRoster = leagueRosters.find(r => r.owner_id === userData.user_id);
+    if (!userRoster) return console.warn("User roster not found.");
+
+    const userMatchup = leagueMatchups.find(m => m.roster_id === userRoster.roster_id);
+    if (!userMatchup) return console.warn("User matchup not found.");
+
+    const opponentInfo = getOpponentInfo(userMatchup, leagueMatchups, leagueRosters, leagueUsers);
+    if (!opponentInfo) return console.warn("Opponent info not found.");
+
+    const opponentTeamName = opponentInfo.user?.metadata?.team_name || "No team name found";
+
+    userTeamContainer.innerHTML = "";
+    opponentTeamContainer.innerHTML = "";
+    rosterContainer.innerHTML = "";
+
+    userTeamContainer.appendChild(
+        renderTeamContainer(
+            userTeamName,
+            userRoster.settings.wins,
+            userRoster.settings.losses,
+            userRoster.settings.fpts,
+            renderStartersList(userMatchup.starters, playerData)
+        )
+    );
+
+    opponentTeamContainer.appendChild(
+        renderTeamContainer(
+            opponentTeamName,
+            opponentInfo.roster.settings.wins,
+            opponentInfo.roster.settings.losses,
+            opponentInfo.roster.settings.fpts,
+            renderStartersList(opponentInfo.matchup.starters, playerData)
+        )
+    );
+
+    rosterContainer.appendChild(
+        renderRosterContainer(
+            nflState.week,
+            renderRosterPositionsList(leagueData.roster_positions)
+        )
+    );
+}
+
+
+/*function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, userTeamContainer, opponentTeamContainer, leagueData, rosterContainer) {
     const userTeamName = getTeamName(userData, leagueUsers);
     const userRoster = leagueRosters.find(r => r.owner_id === userData.user_id);
     if (!userRoster) {
@@ -529,7 +659,7 @@ function renderMatchup(userData, leagueUsers, leagueRosters, leagueMatchups, use
         <h3 class="text-lg font-semibold py-2">Positions</h3>
         ${renderRosterPositionsList(leagueData.roster_positions)}
     `;
-}
+}*/
 
 
 function showToast(message = "Saved successfully!") {

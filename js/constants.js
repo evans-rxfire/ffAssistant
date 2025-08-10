@@ -1,11 +1,15 @@
+export const LS_NFLSTATE_KEY = "nflState";
 export const LS_USER_KEY = "userData";
+export const LS_USER_LEAGUES_KEY = "userLeagues";
 export const LS_LEAGUE_KEY = "leagueData";
 export const LS_USERS_KEY = "leagueUsers";
 export const LS_ROSTERS_KEY = "leagueRosters";
 export const LS_MATCHUPS_KEY = "leagueMatchups";
 
 export const ALL_LOCAL_STORAGE_KEYS = [
+    LS_NFLSTATE_KEY,
     LS_USER_KEY,
+    LS_USER_LEAGUES_KEY,
     LS_LEAGUE_KEY,
     LS_USERS_KEY,
     LS_ROSTERS_KEY,
@@ -13,10 +17,20 @@ export const ALL_LOCAL_STORAGE_KEYS = [
 ]; //for future use - adding more keys
 
 export const localStorageRegistry = {
+    [LS_NFLSTATE_KEY]: {
+        get: () => nflState,
+        set: (data) => { nflState = data ?? {}; },
+        label: "NFL info" 
+    },
     [LS_USER_KEY]: {
-    get: () => userData,
-    set: (data) => { userData = data ?? {}; },
-    label: "your profile"
+        get: () => userData,
+        set: (data) => { userData = data ?? {}; },
+        label: "your profile"
+    },
+    [LS_USER_LEAGUES_KEY]: {
+        get: () => leagues,
+        set: (data) => { leagues = data ?? {}; },
+        label: "your leagues"
     },
     [LS_LEAGUE_KEY]: {
         get: () => leagueData,
